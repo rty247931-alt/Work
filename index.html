@@ -464,5 +464,107 @@ $("clearMyDataBtn").onclick=async()=>{
 
 check();
 </script>
+  <style>
+/* تأثير الحروف المتحركة */
+.colorful-input-wrap{
+  position:relative;
+}
+
+.colorful-input-wrap input{
+  position:relative;
+  z-index:2;
+  background:transparent !important;
+  color:transparent !important;
+  caret-color:#63e6ff !important;
+}
+
+.colorful-input-text{
+  position:absolute;
+  inset:0;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  gap:0;
+  overflow:hidden;
+  pointer-events:none;
+  z-index:1;
+  white-space:nowrap;
+}
+
+.colorful-char{
+  display:inline-block;
+  font-weight:800;
+  animation:charShake .45s infinite alternate ease-in-out,
+            charColor 2s infinite linear;
+  text-shadow:0 0 8px currentColor;
+}
+
+@keyframes charShake{
+  0%{transform:translateY(-1px) rotate(-1deg)}
+  100%{transform:translateY(1px) rotate(1deg)}
+}
+
+@keyframes charColor{
+  0%{color:#00e5ff}
+  20%{color:#7c4dff}
+  40%{color:#ff4081}
+  60%{color:#20c997}
+  80%{color:#ffd740}
+  100%{color:#00e5ff}
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  function colorfulInput(id, password = false){
+
+    const input = document.getElementById(id);
+    if(!input) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "colorful-input-wrap";
+
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    const text = document.createElement("div");
+    text.className = "colorful-input-text";
+    wrap.appendChild(text);
+
+    function update(){
+
+      text.innerHTML = "";
+
+      const value = input.value;
+
+      for(let i = 0; i < value.length; i++){
+
+        const span = document.createElement("span");
+        span.className = "colorful-char";
+
+        span.textContent = password ? "•" : value[i];
+
+        span.style.animationDelay =
+          (i * 0.08) + "s";
+
+        text.appendChild(span);
+      }
+    }
+
+    input.addEventListener("input", update);
+
+    input.addEventListener("focus", update);
+
+    update();
+  }
+
+  colorfulInput("username");
+
+  /* لو عايز الباسورد كمان بنفس التأثير */
+  colorfulInput("password", true);
+
+});
+</script>
 </body>
 </html>
