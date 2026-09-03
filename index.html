@@ -701,5 +701,23 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
+  <script>
+document.addEventListener("click", function(e) {
+  const eye = e.target.closest(".eye-btn");
+  if (!eye) return;
+
+  const targetId = eye.getAttribute("data-target");
+  const input = document.getElementById(targetId);
+  if (!input) return;
+
+  if (input.type === "password") {
+    input.type = "text";
+    eye.textContent = "🙈";
+  } else {
+    input.type = "password";
+    eye.textContent = "👁️";
+  }
+});
+  </script>
 </body>
 </html>
