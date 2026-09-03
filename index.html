@@ -464,6 +464,123 @@ $("clearMyDataBtn").onclick=async()=>{
 
 check();
 </script>
-  
+ <style>
+/* اسم المستخدم فقط */
+#username{
+  color:transparent !important;
+  -webkit-text-fill-color:transparent !important;
+  caret-color:#63e6ff !important;
+}
+
+.color-input-wrap{
+  position:relative;
+}
+
+.color-input-letters{
+  position:absolute;
+  inset:0;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  white-space:nowrap;
+  pointer-events:none;
+  z-index:1;
+  direction:ltr;
+  justify-content:flex-start;
+}
+
+.color-input-letters span{
+  display:inline-block;
+  font-weight:800;
+  animation:
+    letterShake .35s ease-in-out infinite alternate,
+    letterColors 3s linear infinite;
+  text-shadow:0 0 8px currentColor;
+}
+
+@keyframes letterShake{
+  from{transform:translateY(-1.5px) rotate(-1deg)}
+  to{transform:translateY(1.5px) rotate(1deg)}
+}
+
+@keyframes letterColors{
+  0%{color:#00e5ff}
+  20%{color:#7c4dff}
+  40%{color:#ff4081}
+  60%{color:#20c997}
+  80%{color:#ffd740}
+  100%{color:#00e5ff}
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  /* تأثير اسم المستخدم */
+  const input = document.getElementById("username");
+
+  if(input){
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "color-input-wrap";
+
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const letters = document.createElement("div");
+    letters.className = "color-input-letters";
+    wrapper.appendChild(letters);
+
+    function updateLetters(){
+
+      letters.innerHTML = "";
+
+      for(let i = 0; i < input.value.length; i++){
+
+        const span = document.createElement("span");
+
+        /* يحافظ على ترتيب الحروف كما كتبتها */
+        span.textContent = input.value.charAt(i);
+
+        span.style.animationDelay =
+          (i * 0.08) + "s," +
+          (i * 0.25) + "s";
+
+        letters.appendChild(span);
+      }
+    }
+
+    input.addEventListener("input", updateLetters);
+
+    updateLetters();
+  }
+
+
+  /* تشغيل زر العين */
+  document.querySelectorAll(".eye-btn").forEach(function(button){
+
+    button.onclick = function(){
+
+      const target = document.getElementById(
+        button.getAttribute("data-target")
+      );
+
+      if(!target) return;
+
+      if(target.type === "password"){
+        target.type = "text";
+        button.textContent = "🙈";
+      }else{
+        target.type = "password";
+        button.textContent = "👁️";
+      }
+
+    };
+
+  });
+
+});
+</script> 
 </body>
 </html>
