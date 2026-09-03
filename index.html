@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>منفذ خريطة</title>
+<style>
+:root{--bg:#08111f;--panel:#101b2d;--panel2:#142238;--border:#263854;--text:#f4f7fb;--muted:#9aa9bd;--blue:#2f80ed;--green:#20c997;--red:#ef5350;--yellow:#f0b429;--input-bg:#0b1627;--side-bg:#0b1627}
+html[data-theme="light"]{--bg:#eef2f8;--panel:#ffffff;--panel2:#f4f7fc;--border:#dbe3ef;--text:#16233a;--muted:#5c6b82;--blue:#2f6fed;--green:#0f9d68;--red:#e34848;--yellow:#c98a06;--input-bg:#ffffff;--side-bg:#ffffff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif;transition:background .2s,color .2s}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.hidden{display:none!important}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;gap:55px;flex-wrap:wrap;padding:40px 20px;background:radial-gradient(circle at top,#18345c,var(--bg) 55%);position:relative;overflow:hidden}
+html[data-theme="light"] .login{background:radial-gradient(circle at top,#cfe0fb,var(--bg) 55%)}
+.login::before{content:"";position:absolute;inset:0;background-image:radial-gradient(2px 2px at 20% 30%,#ffffff55,transparent),radial-gradient(2px 2px at 70% 60%,#ffffff33,transparent),radial-gradient(1.5px 1.5px at 40% 80%,#ffffff44,transparent),radial-gradient(2px 2px at 85% 20%,#ffffff33,transparent),radial-gradient(1.5px 1.5px at 55% 15%,#ffffff33,transparent);pointer-events:none;z-index:0}
+.login-globe-bg{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:900px;height:900px;max-width:none;pointer-events:none;z-index:0;opacity:.8}
+.login-globe-bg .sphere{position:absolute;inset:150px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#2a72e0 0%,#123c8c 35%,#071f4d 65%,#020a1f 100%);box-shadow:0 0 160px #2f80ed88,inset -60px -60px 130px #00050fcc;overflow:hidden}
+.login-globe-bg .sphere::before{content:"";position:absolute;inset:0;background-image:radial-gradient(ellipse 130px 90px at 28% 35%,#8fae5f99,transparent 70%),radial-gradient(ellipse 110px 150px at 68% 55%,#8fae5f77,transparent 70%),radial-gradient(ellipse 90px 70px at 46% 80%,#8fae5f66,transparent 70%),radial-gradient(ellipse 70px 50px at 85% 30%,#8fae5f55,transparent 70%),radial-gradient(2px 2px at 20% 25%,#ffe9a8,transparent),radial-gradient(2px 2px at 40% 45%,#ffe9a8,transparent),radial-gradient(1.5px 1.5px at 60% 60%,#ffe9a8,transparent),radial-gradient(2px 2px at 75% 40%,#ffe9a8,transparent),radial-gradient(1.5px 1.5px at 30% 70%,#ffe9a8,transparent);background-size:700px 700px;animation:globe-rotate 26s linear infinite}
+.login-globe-bg .sphere::after{content:"";position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#bfe4ff44,transparent 45%);box-shadow:inset 0 0 60px #63e6ffaa}
+@keyframes globe-rotate{from{background-position-x:0}to{background-position-x:-700px}}
+.login-globe-bg .ring{position:absolute;top:50%;left:50%;border:2px solid #4fc3ff99;border-radius:50%;box-shadow:0 0 18px #4fc3ff77}
+.login-globe-bg .ring1{width:820px;height:300px;margin:-150px 0 0 -410px;animation:ring-spin 11s linear infinite}
+.login-globe-bg .ring2{width:300px;height:820px;margin:-410px 0 0 -150px;animation:ring-spin 15s linear infinite reverse}
+@keyframes ring-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.login-globe-bg .ring1::after,.login-globe-bg .ring2::after{content:"";position:absolute;width:11px;height:11px;background:#63e6ff;border-radius:50%;box-shadow:0 0 14px #63e6ff;top:-5.5px;left:50%;margin-left:-5.5px}
+@media(max-width:760px){.login-globe-bg{width:520px;height:520px}.login-globe-bg .sphere{inset:90px}.login-globe-bg .ring1{width:470px;height:170px;margin:-85px 0 0 -235px}.login-globe-bg .ring2{width:170px;height:470px;margin:-235px 0 0 -85px}}
+.login-logo-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(1150px,125vw);height:min(1150px,125vw);max-width:none;pointer-events:none;z-index:0;opacity:.32;filter:drop-shadow(0 0 35px #2f80ed44);mix-blend-mode:screen}
+.login-logo-bg img{width:100%;height:100%;object-fit:contain}
+@media(max-width:760px){.login-logo-bg{width:720px;height:720px;opacity:.28}}
+#bubbleField{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.bubble{position:absolute;bottom:-10%;border-radius:50%;background:radial-gradient(circle at 28% 28%,#ffffffcc 0%,#ffffff66 10%,#63c8ff77 32%,#2f80ed55 58%,transparent 74%);border:1px solid #8ed8ff66;box-shadow:inset -4px -5px 10px #0b4c9c33,0 0 12px #2f80ed44;pointer-events:none;animation:bubble-rise linear infinite}
+@keyframes bubble-rise{0%{transform:translateY(0) scale(1);opacity:0}8%{opacity:.85}90%{opacity:.4}100%{transform:translateY(-115vh) scale(1.15);opacity:0}}
+.pin-wrap{position:relative;width:150px;height:195px;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;z-index:2}
+.pin-svg{width:140px;height:180px;filter:drop-shadow(0 0 18px #2f80edaa);animation:pin-float 3s ease-in-out infinite;position:relative;z-index:2}
+@keyframes pin-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.pin-dot{animation:pin-pulse 2s ease-in-out infinite}
+@keyframes pin-pulse{0%,100%{opacity:1;r:16}50%{opacity:.55;r:11}}
+.pin-ring{position:absolute;bottom:8px;width:56px;height:14px;border:2px solid #2f80ed99;border-radius:50%;animation:ring-pulse 2.4s ease-out infinite;z-index:1}
+.pin-ring.delay{animation-delay:1.2s}
+@keyframes ring-pulse{0%{transform:scale(.4);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+@media(max-width:760px){.pin-wrap{width:110px;height:145px}.pin-svg{width:100px;height:130px}}
+.login-card-wrap{position:relative;width:min(420px,100%);border-radius:27px;padding:3px;overflow:hidden;z-index:2;box-shadow:0 20px 70px #0008}
+.login-card-wrap::before{content:"";position:absolute;inset:-60%;background:conic-gradient(from 0deg,#2f80ed,#6c5ce7,#ef5350,#f0b429,#20c997,#2f80ed);animation:spin-border 3s linear infinite}
+@keyframes spin-border{to{transform:rotate(360deg)}}
+.login-card{width:100%;background:var(--panel);border-radius:24px;padding:30px;position:relative;z-index:1;overflow:hidden}
+
+/* تعديل الشريط المتحرك ليعمل بشكل دائري متصل تماماً */
+.card-marquee{margin:-30px -30px 20px -30px;height:36px;background:linear-gradient(90deg,#0b1627,#18345c,#0b1627);display:flex;align-items:center;overflow:hidden;white-space:nowrap;border-bottom:1px solid var(--border)}
+.card-marquee .track{display:inline-flex;flex-wrap:nowrap;white-space:nowrap;color:#fff;font-size:12.5px;letter-spacing:.4px;animation:marquee 18s linear infinite;will-change:transform}
+.card-marquee .track span{padding-inline-end:30px;white-space:nowrap;display:inline-block}
+@keyframes marquee{
+  from{transform:translateX(0)}
+  to{transform:translateX(50%)}
+}
+
+.logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#2f80ed,#6c5ce7);display:grid;place-items:center;font-size:30px;font-weight:900;margin:0 auto 15px;color:#fff}
+.logo.logo-img{background:linear-gradient(135deg,#2f80ed,#6c5ce7);border-radius:50%;overflow:hidden;box-shadow:0 0 20px #2f80ed66}
+.logo.logo-img img{width:82%;height:82%;object-fit:contain;border-radius:50%}
+.login .logo.logo-img{width:180px;height:180px;background:conic-gradient(from 0deg,#2f80ed,#6c5ce7,#20c997,#2f80ed);box-shadow:0 0 30px #2f80ed77;animation:spin-logo 7s linear infinite}
+.login .logo.logo-img img{animation:spin-logo 7s linear infinite reverse}
+.brand .logo.logo-img{width:45px;height:45px}
+@keyframes spin-logo{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.login .logo{animation:spin-logo 7s linear infinite;box-shadow:0 0 30px #2f80ed77;background:conic-gradient(from 0deg,#2f80ed,#6c5ce7,#20c997,#2f80ed)}
+.login .logo span{display:inline-block;animation:spin-logo 7s linear infinite reverse}
+.loginForm input,.login #username{transition:all .25s ease}
+.login #username{font-weight:700;letter-spacing:.4px;caret-color:#63e6ff;text-shadow:0 0 10px #2f80ed22}
+.login #username:focus{border-color:#63e6ff;box-shadow:0 0 0 3px #63e6ff1c,0 0 24px #2f80ed33;background:linear-gradient(90deg,var(--input-bg),#132a49)}
+.login #username::selection{background:#63e6ff55;color:#fff}
+.login-card form>.btn.primary{position:relative;overflow:hidden;border:1px solid #63e6ff66;background:linear-gradient(135deg,#2f80ed,#6c5ce7 55%,#20c997);font-weight:800;letter-spacing:.6px;box-shadow:0 8px 25px #2f80ed44,0 0 18px #6c5ce755;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.login-card form>.btn.primary::before{content:"";position:absolute;inset:-40% -20%;background:linear-gradient(110deg,transparent 35%,#ffffff66 50%,transparent 65%);transform:translateX(-120%) rotate(8deg);animation:login-shine 3.2s ease-in-out infinite;pointer-events:none}
+.login-card form>.btn.primary:hover{transform:translateY(-2px) scale(1.015);box-shadow:0 12px 32px #2f80ed66,0 0 26px #20c99744;filter:saturate(1.15)}
+.login-card form>.btn.primary:active{transform:translateY(1px) scale(.99)}
+@keyframes login-shine{0%,55%{transform:translateX(-120%) rotate(8deg)}75%,100%{transform:translateX(120%) rotate(8deg)}}
+.login-footer{text-align:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.8}
+.login-footer b{color:var(--text)}
+h1,h2,h3{margin-top:0}.muted{color:var(--muted)}label{display:block;margin:13px 0 7px;color:var(--text)}
+input,select,textarea{width:100%;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}textarea{resize:vertical;min-height:80px}
+.btn{padding:11px 15px;border-radius:11px;background:#22344e;color:#fff}.btn.primary{background:var(--blue)}.btn.green{background:#087f5b;color:#fff}.btn.red{background:#a92d2d;color:#fff}.btn.light{background:#1b2b42;color:#fff}
+html[data-theme="light"] .btn{background:#e4e9f2;color:var(--text)}
+html[data-theme="light"] .btn.primary{background:var(--blue);color:#fff}html[data-theme="light"] .btn.green{background:var(--green);color:#fff}html[data-theme="light"] .btn.red{background:var(--red);color:#fff}html[data-theme="light"] .btn.light{background:#e4e9f2;color:var(--text)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.app{min-height:100vh;display:flex}.side{width:245px;background:var(--side-bg);border-left:1px solid var(--border);padding:20px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:25px}.brand .logo{width:45px;height:45px;border-radius:13px;margin:0;font-size:20px}.brand strong{font-size:18px}
+.nav button{display:block;width:100%;text-align:right;margin:6px 0;background:transparent;color:var(--text);padding:12px;border-radius:10px}.nav button.active,.nav button:hover{background:var(--panel2)}
+.main{flex:1;padding:22px;overflow:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}.top-actions{display:flex;gap:8px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:18px}.stat{font-size:25px;font-weight:800;margin-top:8px}.section{margin-top:20px}.row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px}.table{width:100%;border-collapse:collapse;min-width:800px}.table th,.table td{padding:11px;border-bottom:1px solid var(--border);text-align:right}.table th{background:var(--panel2)}.badge{display:inline-block;padding:5px 9px;border-radius:99px;font-size:12px}.b-yellow{background:#4d3b0d;color:#ffd66b}.b-green{background:#073f31;color:#62e6bd}.b-red{background:#4a1818;color:#ff9a9a}
+html[data-theme="light"] .b-yellow{background:#fdf0cf;color:#8a5d00}html[data-theme="light"] .b-green{background:#d9f5e7;color:#0b6b46}html[data-theme="light"] .b-red{background:#fbdede;color:#a11f1f}
+.items{border:1px solid var(--border);border-radius:13px;padding:12px}.item{display:grid;grid-template-columns:1fr 100px 130px 42px;gap:8px;margin-bottom:8px;align-items:center}.icon-btn{background:#4a1818;color:#fff;border-radius:9px;padding:10px}
+.modal{position:fixed;inset:0;background:#0009;display:none;place-items:center;padding:18px;z-index:5}.modal.open{display:grid}.modal-box{width:min(900px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:20px}
+.toast{position:fixed;bottom:20px;left:20px;background:var(--panel2);border:1px solid var(--border);padding:12px 16px;border-radius:12px;display:none;z-index:20;color:var(--text)}.toast.show{display:block}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}.tabs button{background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 14px}.tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.danger-box{border:1px solid var(--red);border-radius:14px;padding:16px;background:rgba(169,45,45,.08)}
+.theme-toggle{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:9px 12px}
+.pass-wrap{position:relative}.pass-wrap input{padding-left:40px}.eye-btn{position:absolute;left:6px;top:50%;transform:translateY(-50%);background:transparent;color:var(--muted);font-size:16px;padding:6px}
+.role-chip{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--panel2);color:var(--muted);margin-right:6px}
+@media(max-width:900px){.side{width:75px;padding:12px}.brand span,.nav button span,.user-name{display:none}.nav button{text-align:center}.grid{grid-template-columns:repeat(2,1fr)}.row,.row3{grid-template-columns:1fr}.main{padding:14px}.top{align-items:flex-start}.item{grid-template-columns:1fr 75px 100px 38px}}
+@media(max-width:520px){.grid{grid-template-columns:1fr 1fr}.card{padding:13px}.stat{font-size:20px}.side{width:62px}.top h2{font-size:20px}.top-actions .btn{padding:9px}}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="login-logo-bg" aria-hidden="true"><img src="logo-bg.png" alt=""></div>
+  <div id="bubbleField" aria-hidden="true"></div>
+  <div class="pin-wrap" aria-hidden="true">
+    <div class="pin-ring"></div>
+    <div class="pin-ring delay"></div>
+    <svg class="pin-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="pinGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2f80ed"/>
+          <stop offset="50%" stop-color="#6c5ce7"/>
+          <stop offset="100%" stop-color="#20c997"/>
+        </linearGradient>
+        <radialGradient id="dotGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="100%" stop-color="#63e6ff"/>
+        </radialGradient>
+      </defs>
+      <path d="M50 5 C25 5 5 25 5 50 C5 85 50 125 50 125 C50 125 95 85 95 50 C95 25 75 5 50 5 Z" fill="none" stroke="url(#pinGrad)" stroke-width="4"/>
+      <circle class="pin-dot" cx="50" cy="48" r="16" fill="url(#dotGrad)"/>
+    </svg>
+  </div>
+  <div class="login-card-wrap">
+  <div class="login-card">
+    <!-- تم مطابقة النصوص داخل العناصر لضمان تماثل الحركة الدائرية -->
+    <div class="card-marquee"><div class="track">
+      <span>✨ منفذ خريطة — نظام إدارة حجوزات وبيع الكتب &nbsp;&nbsp;•&nbsp;&nbsp; إدارة سريعة وآمنة لفواتيرك وحجوزاتك &nbsp;&nbsp;•&nbsp;&nbsp; أهلاً بعودتك، سجّل دخولك للمتابعة &nbsp;&nbsp;•&nbsp;&nbsp;</span>
+      <span>✨ منفذ خريطة — نظام إدارة حجوزات وبيع الكتب &nbsp;&nbsp;•&nbsp;&nbsp; إدارة سريعة وآمنة لفواتيرك وحجوزاتك &nbsp;&nbsp;•&nbsp;&nbsp; أهلاً بعودتك، سجّل دخولك للمتابعة &nbsp;&nbsp;•&nbsp;&nbsp;</span>
+    </div></div>
+    <div class="logo logo-img"><img src="logo.png" alt="منفذ خريطة"></div>
+    <h1 style="text-align:center">منفذ خريطة</h1>
+    <p class="muted" style="text-align:center">نظام إدارة حجوزات وبيع الكتب</p>
+    <form id="loginForm">
+      <label>اسم المستخدم</label><input id="username" required autocomplete="username">
+      <label>كلمة المرور</label><div class="pass-wrap"><input id="password" type="password" required autocomplete="current-password"><button type="button" class="eye-btn" data-target="password">👁️</button></div>
+      <button class="btn primary" style="width:100%;margin-top:18px">دخول</button>
+    </form>
+    <p id="loginError" class="muted" style="color:#ff8e8e"></p>
+    <div class="login-footer">جميع الحقوق محفوظة © 2026 — منفذ خريطة<br>تصميم: <b>مصطفى عبدالرحمن</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="side">
+    <div class="brand"><div class="logo logo-img"><img src="logo.png" alt="منفذ خريطة"></div><strong>منفذ خريطة</strong></div>
+    <nav class="nav">
+      <button data-page="dashboard" class="active">🏠 <span>الرئيسية</span></button>
+      <button data-page="new">🧾 <span>فاتورة جديدة</span></button>
+      <button data-page="reservations">📦 <span>الحجوزات</span></button>
+      <button data-page="archive">🗄️ <span>الأرشيف</span></button>
+      <button data-page="logs">📋 <span>سجل العمليات</span></button>
+      <button data-page="settings">⚙️ <span>الإعدادات</span></button>
+    </nav>
+  </aside>
+  <main class="main">
+    <div class="top">
+      <div><h2 id="pageTitle">لوحة التحكم</h2><div class="muted">نظام منفذ خريطة</div></div>
+      <div class="top-actions">
+        <button id="themeToggle" class="theme-toggle" title="تبديل المظهر">🌙</button>
+        <span id="userName" class="user-name muted"></span><span id="roleChip" class="role-chip hidden"></span>
+        <button id="logout" class="btn red">خروج</button>
+      </div>
+    </div>
+
+    <section id="dashboard" class="page">
+      <div id="employeeFilterBar" class="hidden" style="margin-bottom:14px"><label>عرض بيانات</label><select id="employeeFilter"><option value="all">كل الموظفين</option></select></div>
+      <div class="grid">
+        <div class="card"><div class="muted">إجمالي الفواتير</div><div id="sInvoices" class="stat">0</div></div>
+        <div class="card"><div class="muted">إجمالي المبيعات</div><div id="sTotal" class="stat">0 ج</div></div>
+        <div class="card"><div class="muted">محجوز</div><div id="sReservations" class="stat">0</div></div>
+        <div class="card"><div class="muted">تم التسليم</div><div id="sDelivered" class="stat">0</div></div>
+      </div>
+      <div class="section card"><h3>آخر الحجوزات</h3><div id="recent"></div></div>
+    </section>
+
+    <section id="new" class="page hidden">
+      <div class="card">
+        <h3>إنشاء فاتورة / حجز</h3>
+        <form id="invoiceForm">
+          <div class="row">
+            <div><label>اسم الطالب</label><input id="student" required></div>
+            <div><label>رقم الهاتف</label><input id="phone"></div>
+            <div><label>الصف</label><select id="grade"><option value="">اختر الصف</option><option>أولى ثانوي</option><option>ثانية ثانوي</option><option>ثالثة ثانوي</option></select></div>
+            <div><label>المدرس</label><input id="teacher" list="teacherList" autocomplete="off"><datalist id="teacherList"></datalist></div>
+          </div>
+          <label>الكتب</label>
+          <div class="items"><div id="items"></div><button type="button" id="addItem" class="btn light">+ إضافة كتاب</button></div>
+          <label>ملاحظة للفاتورة <span class="muted">(اختياري)</span></label><textarea id="note" placeholder="اكتب أي ملاحظة خاصة بالحجز..."></textarea>
+          <div class="card" style="margin-top:14px;background:var(--panel2)"><strong>الإجمالي: <span id="total">0</span> جنيه</strong></div>
+          <button class="btn primary" style="margin-top:14px">حفظ الفاتورة وطباعة الوصل</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="reservations" class="page hidden"><div class="card"><h3>الحجوزات</h3><div class="row3"><div><label>بحث</label><input id="resSearch" placeholder="اسم، هاتف، رقم فاتورة، مدرس..."></div><div><label>الحالة</label><select id="resStatus"><option value="">الكل</option><option>محجوز</option><option>تم التسليم</option><option>ملغي</option></select></div></div><div id="resSummary" class="card" style="margin-top:14px;background:var(--panel2);display:none"></div><div id="resTable" style="margin-top:14px"></div></div></section>
+
+    <section id="archive" class="page hidden"><div class="card"><h3>📦 الأرشيف</h3><p class="muted">البيانات المؤرشفة تفضل محفوظة هنا، ويمكن البحث فيها واسترجاعها في أي وقت.</p><div><input id="arcSearch" placeholder="ابحث باسم الطالب أو الهاتف أو رقم الفاتورة..."></div><div id="arcTable" style="margin-top:14px"></div></div></section>
+
+    <section id="logs" class="page hidden"><div class="card"><div class="top" style="margin-bottom:10px"><h3 style="margin:0">سجل العمليات</h3><button id="clearLogsBtn" class="btn red hidden">مسح السجل بالكامل</button></div><div id="logsTable"></div></div></section>
+
+    <section id="settings" class="page hidden">
+      <div class="tabs">
+        <button data-tab="trash" class="active">🗑️ سلة المهملات</button>
+        <button data-tab="accounts">👤 الحسابات</button>
+        <button data-tab="danger">🔄 محو البيانات</button>
+      </div>
+
+      <div id="settingsTrash" class="settings-tab">
+        <div class="card">
+          <div class="top" style="margin-bottom:10px">
+            <h3 style="margin:0">🗑️ سلة المهملات</h3>
+            <button id="emptyTrashBtn" class="btn red">محو سلة المهملات نهائيًا</button>
+          </div>
+          <p class="muted">العناصر هنا محذوفة مؤقتًا. يمكنك استرجاع أي عنصر لمكانه الأصلي، أو حذفه نهائيًا بشكل فردي. «محو سلة المهملات» يحذف كل شيء نهائيًا ولا يمكن التراجع عنه.</p>
+          <div id="trashTable" style="margin-top:14px"></div>
+        </div>
+      </div>
+
+      <div id="settingsAccounts" class="settings-tab hidden">
+        <div class="card">
+          <h3>👤 بيانات حسابي</h3>
+          <p class="muted">كل حساب يشوف ويعدّل بياناته الخاصة بس، ومش شايف أو عارف يغيّر بيانات باقي الحسابات.</p>
+          <div class="row3">
+            <div><label>الاسم</label><input id="myName"></div>
+            <div><label>اسم المستخدم</label><input id="myUsername"></div>
+          </div>
+          <button id="saveMyAccountBtn" class="btn primary" style="margin-top:14px">حفظ البيانات</button>
+        </div>
+        <div class="card section">
+          <h3>🔑 تغيير كلمة المرور</h3>
+          <p class="muted">لازم تدخل كلمة المرور الحالية عشان تقدر تغيّرها.</p>
+          <div class="row3">
+            <div><label>كلمة المرور الحالية</label><div class="pass-wrap"><input id="curPass" type="password"><button type="button" class="eye-btn" data-target="curPass">👁️</button></div></div>
+            <div><label>كلمة المرور الجديدة</label><div class="pass-wrap"><input id="newPass" type="password"><button type="button" class="eye-btn" data-target="newPass">👁️</button></div></div>
+            <div><label>تأكيد كلمة المرور الجديدة</label><div class="pass-wrap"><input id="newPass2" type="password"><button type="button" class="eye-btn" data-target="newPass2">👁️</button></div></div>
+          </div>
+          <button id="changePassBtn" class="btn primary" style="margin-top:14px">تغيير كلمة المرور</button>
+        </div>
+      </div>
+
+      <div id="settingsDanger" class="settings-tab hidden">
+        <div class="card danger-box">
+          <h3>🔄 محو جميع بياناتي الحالية</h3>
+          <p class="muted">لن يتم حذف بياناتك نهائيًا فورًا؛ بدلاً من ذلك سيتم نقل كل حجوزاتك الحالية (النشطة والمؤرشفة) إلى سلة المهملات، ويمكنك استرجاعها من هناك في أي وقت. الحذف النهائي لا يحدث إلا عند «محو سلة المهملات».</p>
+          <button id="clearMyDataBtn" class="btn red">محو جميع بياناتي الحالية</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modal" class="modal"><div class="modal-box"><div style="display:flex;justify-content:space-between;gap:10px"><h3>تفاصيل الفاتورة</h3><button class="btn" onclick="closeModal()">إغلاق</button></div><div id="modalBody"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let currentUser=null;
+const money=n=>Number(n||0).toLocaleString("ar-EG",{maximumFractionDigits:2});
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2500)}
+async function api(url,opt={}){const r=await fetch(url,{headers:{"Content-Type":"application/json"},...opt});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"حدث خطأ");return d}
+
+// ---- Theme (dark/light), persisted locally per browser ----
+function applyTheme(t){document.documentElement.setAttribute("data-theme",t);$("themeToggle").textContent=t==="light"?"☀️":"🌙";localStorage.setItem("mk-theme",t)}
+applyTheme(localStorage.getItem("mk-theme")||"dark");
+$("themeToggle").onclick=()=>applyTheme(document.documentElement.getAttribute("data-theme")==="light"?"dark":"light");
+
+$("loginForm").onsubmit=async e=>{e.preventDefault();$("loginError").textContent="";try{const d=await api("/api/login",{method:"POST",body:JSON.stringify({username:$("username").value,password:$("password").value})});currentUser=d.user;showApp()}catch(x){$("loginError").textContent=x.message}}
+$("logout").onclick=async()=>{await api("/api/logout",{method:"POST"});location.reload()}
+async function check(){try{const d=await api("/api/me");if(d.user){currentUser=d.user;showApp()}}catch{}}
+function isAdmin(){return currentUser && currentUser.role==="admin"}
+
+async function showApp(){
+  $("login").classList.add("hidden");$("app").classList.remove("hidden");
+  $("userName").textContent=currentUser.name;
+  if(isAdmin()){$("roleChip").textContent="مدير";$("roleChip").classList.remove("hidden")}
+  if(isAdmin()){
+    $("employeeFilterBar").classList.remove("hidden");
+    try{const emps=await api("/api/employees");$("employeeFilter").innerHTML=`<option value="all">كل الموظفين</option>`+emps.map(e=>`<option value="${e.id}">${esc(e.name)}${e.role==="admin"?" (مدير)":""}</option>`).join("")}catch{}
+    $("employeeFilter").onchange=()=>{loadDashboard();if(!$("reservations").classList.contains("hidden"))loadInvoices("res");if(!$("archive").classList.contains("hidden"))loadInvoices("arc");if(!$("settings").classList.contains("hidden"))loadTrash();if(!$("logs").classList.contains("hidden"))loadLogs()};
+  }else{
+    $("emptyTrashBtn").classList.add("hidden");
+  }
+  if(isAdmin()) $("clearLogsBtn").classList.remove("hidden");
+  loadDashboard();addItem();
+}
+function employeeParam(){return isAdmin() ? ($("employeeFilter").value||"all") : ""}
+
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>go(b.dataset.page));
+function go(page){document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));$(page).classList.remove("hidden");$("pageTitle").textContent={dashboard:"لوحة التحكم",new:"فاتورة جديدة",reservations:"الحجوزات",archive:"الأرشيف",logs:"سجل العمليات",settings:"الإعدادات"}[page];if(page==="dashboard")loadDashboard();if(page==="reservations")loadInvoices("res");if(page==="archive")loadInvoices("arc");if(page==="logs")loadLogs();if(page==="settings")loadTrash()}
+
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".settings-tab").forEach(x=>x.classList.add("hidden"));$("settings"+b.dataset.tab.charAt(0).toUpperCase()+b.dataset.tab.slice(1)).classList.remove("hidden");if(b.dataset.tab==="trash")loadTrash();if(b.dataset.tab==="accounts")loadMyAccount()});
+
+// Show/hide password toggle (works for the login field and any settings password field)
+document.addEventListener("click",e=>{
+  if(e.target.classList.contains("eye-btn")){
+    const inp=$(e.target.dataset.target);
+    inp.type = inp.type==="password" ? "text" : "password";
+    e.target.textContent = inp.type==="password" ? "👁️" : "🙈";
+  }
+});
+
+async function loadDashboard(){const qs=new URLSearchParams(isAdmin()?{employee:employeeParam()}:{});const s=await api("/api/stats?"+qs);$("sInvoices").textContent=s.invoices;$("sTotal").textContent=money(s.total)+" ج";$("sReservations").textContent=s.reservations;$("sDelivered").textContent=s.delivered;const rows=await api("/api/invoices?"+new URLSearchParams({...(isAdmin()?{employee:employeeParam()}:{})}));$("recent").innerHTML=table(rows.slice(0,8),"active")}
+function badge(s){return `<span class="badge ${s==="محجوز"?"b-yellow":s==="تم التسليم"?"b-green":"b-red"}">${s}</span>`}
+function ownerCell(r){return isAdmin() ? `<td>${esc(r.created_by_name||"-")}</td>` : ""}
+function ownerHeader(){return isAdmin() ? "<th>الموظف</th>" : ""}
+function table(rows,mode){
+  if(!rows.length)return `<p class="muted">لا توجد بيانات.</p>`;
+  const actions = r => {
+    if(mode==="trash") return `<button class="btn light" onclick="restoreInvoice(${r.id})">↩️ استرجاع</button> <button class="btn red" onclick="permaDelete(${r.id},'${esc(r.code)}')">حذف نهائي</button>`;
+    if(mode==="archived") return `<button class="btn light" onclick="openInvoice(${r.id})">فتح</button> <button class="btn green" onclick="unarchiveInvoice(${r.id})">↩️ إخراج من الأرشيف</button>`;
+    return `<button class="btn light" onclick="openInvoice(${r.id})">فتح</button>`;
+  };
+  return `<div class="table-wrap"><table class="table"><thead><tr><th>الفاتورة</th><th>الطالب</th>${ownerHeader()}<th>المدرس</th><th>الإجمالي</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.code}</td><td>${esc(r.student_name)}</td>${ownerCell(r)}<td>${esc(r.teacher||"-")}</td><td>${money(r.total)} ج</td><td>${badge(r.status)}</td><td>${new Date(r.created_at).toLocaleString("ar-EG")}</td><td>${actions(r)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+async function loadInvoices(type){
+  const q=$(type==="res"?"resSearch":"arcSearch").value;
+  const status=type==="res"?$("resStatus").value:"";
+  const view=type==="res"?"active":"archived";
+  const params={q,status,view};
+  if(isAdmin()) params.employee=employeeParam();
+  const rows=await api("/api/invoices?"+new URLSearchParams(params));
+  $(type==="res"?"resTable":"arcTable").innerHTML=table(rows,view);
+  if(type==="res") renderResSummary(rows);
+}
+// Live counter above the reservations table: total reservations + total copies (and per-book
+// breakdown) matching the current search/filter — so you know exactly how many to order.
+function renderResSummary(rows){
+  const box=$("resSummary");
+  if(!rows.length){box.style.display="none";box.innerHTML="";return}
+  let totalCopies=0;
+  const perBook={};
+  rows.forEach(r=>(r.items||[]).forEach(it=>{
+    const qty=Number(it.quantity)||0;
+    totalCopies+=qty;
+    perBook[it.book]=(perBook[it.book]||0)+qty;
+  }));
+  const breakdown=Object.entries(perBook).sort((a,b)=>b[1]-a[1]).map(([b,q])=>`${esc(b)}: <b>${q}</b>`).join(" &nbsp;•&nbsp; ");
+  box.style.display="block";
+  box.innerHTML=`📦 عدد الحجوزات: <b>${rows.length}</b> &nbsp;—&nbsp; إجمالي عدد النسخ: <b>${totalCopies}</b>${breakdown?`<div class="muted" style="margin-top:6px">${breakdown}</div>`:""}`;
+}
+$("resSearch").oninput=()=>loadInvoices("res");$("resStatus").onchange=()=>loadInvoices("res");$("arcSearch").oninput=()=>loadInvoices("arc");
+
+async function loadTrash(){
+  const params={view:"trash"};
+  if(isAdmin()) params.employee=employeeParam();
+  const rows=await api("/api/invoices?"+new URLSearchParams(params));
+  $("trashTable").innerHTML=table(rows,"trash");
+}
+
+// ---- Accounts: everyone manages only their own name/username + password ----
+$("changePassBtn").onclick=async()=>{
+  const cur=$("curPass").value, n1=$("newPass").value, n2=$("newPass2").value;
+  if(!cur||!n1){toast("من فضلك أدخل كل الحقول");return}
+  if(n1!==n2){toast("كلمتا المرور الجديدتان غير متطابقتين");return}
+  try{
+    await api("/api/account/change-password",{method:"POST",body:JSON.stringify({currentPassword:cur,newPassword:n1})});
+    toast("تم تغيير كلمة المرور بنجاح");
+    $("curPass").value="";$("newPass").value="";$("newPass2").value="";
+  }catch(x){toast(x.message)}
+}
+function loadMyAccount(){
+  $("myName").value=currentUser.name;
+  $("myUsername").value=currentUser.username;
+}
+$("saveMyAccountBtn").onclick=async()=>{
+  const name=$("myName").value.trim(), username=$("myUsername").value.trim();
+  if(!name||!username){toast("من فضلك أدخل الاسم واسم المستخدم");return}
+  try{
+    const d=await api("/api/account",{method:"PATCH",body:JSON.stringify({name,username})});
+    currentUser=d.user;
+    $("userName").textContent=currentUser.name;
+    toast("تم حفظ بياناتك بنجاح");
+  }catch(x){toast(x.message)}
+}
+
+function addItem(book="",quantity=1,price=0){const div=document.createElement("div");div.className="item";div.innerHTML=`<input class="book" list="bookList" placeholder="اسم الكتاب" value="${esc(book)}"><input class="qty" type="number" min="1" value="${quantity}"><input class="price" type="number" min="0" step="0.01" value="${price}"><button type="button" class="icon-btn">×</button>`;div.querySelector(".icon-btn").onclick=()=>{div.remove();calc()};div.querySelectorAll("input").forEach(x=>x.oninput=calc);$("items").appendChild(div);calc()}
+$("addItem").onclick=()=>addItem();
+$("teacher").oninput=async()=>{const d=await api("/api/suggestions?q="+encodeURIComponent($("teacher").value));$("teacherList").innerHTML=d.teachers.map(x=>`<option value="${esc(x)}">`).join("")}
+const dl=document.createElement("datalist");dl.id="bookList";document.body.appendChild(dl);
+document.addEventListener("input",async e=>{if(e.target.classList.contains("book")){const d=await api("/api/suggestions?q="+encodeURIComponent(e.target.value));dl.innerHTML=d.books.map(x=>`<option value="${esc(x)}">`).join("")}});
+function calc(){let t=0;document.querySelectorAll(".item").forEach(x=>t+=(Number(x.querySelector(".qty").value)||0)*(Number(x.querySelector(".price").value)||0));$("total").textContent=money(t)}
+$("invoiceForm").onsubmit=async e=>{e.preventDefault();const items=[...document.querySelectorAll(".item")].map(x=>({book:x.querySelector(".book").value,quantity:x.querySelector(".qty").value,price:x.querySelector(".price").value}));try{const d=await api("/api/invoices",{method:"POST",body:JSON.stringify({student_name:$("student").value,phone:$("phone").value,grade:$("grade").value,teacher:$("teacher").value,note:$("note").value,items})});toast("تم حفظ الفاتورة "+d.code);await openInvoice(d.id);$("invoiceForm").reset();$("items").innerHTML="";addItem()}catch(x){toast(x.message)}}
+
+async function openInvoice(id){
+  const r=await api("/api/invoices/"+id);
+  const state = r.deleted_at ? "trash" : r.archived_at ? "archived" : "active";
+  let actions = `<button class="btn primary" onclick="printInvoice(${r.id})">🖨️ طباعة الوصل</button>`;
+  if(state==="active"){
+    if(r.status==="محجوز") actions += `<button class="btn green" onclick="deliver(${r.id})">تم التسليم</button><button class="btn red" onclick="cancelInvoice(${r.id})">إلغاء</button>`;
+    actions += `<button class="btn light" onclick="archiveInvoice(${r.id})">📦 أرشفة</button><button class="btn red" onclick="deleteInvoice(${r.id})">🗑️ نقل لسلة المهملات</button>`;
+  }else if(state==="archived"){
+    actions += `<button class="btn green" onclick="unarchiveInvoice(${r.id})">↩️ إخراج من الأرشيف</button><button class="btn red" onclick="deleteInvoice(${r.id})">🗑️ نقل لسلة المهملات</button>`;
+  }else{
+    actions += `<button class="btn green" onclick="restoreInvoice(${r.id})">↩️ استرجاع</button><button class="btn red" onclick="permaDelete(${r.id},'${esc(r.code)}')">حذف نهائي</button>`;
+  }
+  $("modalBody").innerHTML=`<div class="row3"><div><b>رقم الحجز</b><br>${r.code}</div><div><b>الطالب</b><br>${esc(r.student_name)}</div><div><b>الهاتف</b><br>${esc(r.phone||"-")}</div><div><b>الصف</b><br>${esc(r.grade||"-")}</div><div><b>المدرس</b><br>${esc(r.teacher||"-")}</div><div><b>الحالة</b><br>${badge(r.status)}</div>${isAdmin()?`<div><b>الموظف</b><br>${esc(r.created_by_name||"-")}</div>`:""}</div><div class="section table-wrap"><table class="table"><thead><tr><th>الكتاب</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${r.items.map(x=>`<tr><td>${esc(x.book)}</td><td>${x.quantity}</td><td>${money(x.price)} ج</td><td>${money(x.quantity*x.price)} ج</td></tr>`).join("")}</tbody></table></div><div class="card section"><b>الإجمالي: ${money(r.total)} جنيه</b><br><span class="muted">ملاحظة: ${esc(r.note||"لا توجد ملاحظة")}</span></div><div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">${actions}</div>`;
+  $("modal").classList.add("open");
+}
+function closeModal(){$("modal").classList.remove("open")}
+function refreshCurrentView(){loadDashboard();["reservations","archive","settings"].forEach(p=>{if(!$(p).classList.contains("hidden")){if(p==="reservations")loadInvoices("res");if(p==="archive")loadInvoices("arc");if(p==="settings")loadTrash()}})}
+
+async function deliver(id){await api("/api/invoices/"+id+"/deliver",{method:"POST"});toast("تم تسجيل التسليم");closeModal();refreshCurrentView()}
+async function cancelInvoice(id){if(!confirm("تأكيد إلغاء الحجز؟"))return;await api("/api/invoices/"+id+"/cancel",{method:"POST"});toast("تم إلغاء الحجز");closeModal();refreshCurrentView()}
+async function archiveInvoice(id){await api("/api/invoices/"+id+"/archive",{method:"POST"});toast("تم نقل الفاتورة إلى الأرشيف");closeModal();refreshCurrentView()}
+async function unarchiveInvoice(id){await api("/api/invoices/"+id+"/unarchive",{method:"POST"});toast("تم إخراج الفاتورة من الأرشيف");closeModal();refreshCurrentView()}
+async function deleteInvoice(id){if(!confirm("نقل هذه الفاتورة إلى سلة المهملات؟ يمكنك استرجاعها لاحقًا."))return;await api("/api/invoices/"+id+"/delete",{method:"POST"});toast("تم النقل إلى سلة المهملات");closeModal();refreshCurrentView()}
+async function restoreInvoice(id){await api("/api/invoices/"+id+"/restore",{method:"POST"});toast("تم الاسترجاع بنجاح");closeModal();refreshCurrentView()}
+async function permaDelete(id,code){
+  if(!confirm(`سيتم حذف الفاتورة ${code} نهائيًا ولا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟`))return;
+  await api("/api/invoices/"+id+"/permanent",{method:"DELETE"});
+  toast("تم الحذف النهائي");closeModal();refreshCurrentView();
+}
+async function printInvoice(id){const r=await api("/api/invoices/"+id);const w=window.open("","_blank");w.document.write(`<html dir="rtl"><head><title>${r.code}</title><style>body{font-family:Arial;padding:25px;max-width:600px;margin:auto}table{width:100%;border-collapse:collapse}td,th{border:1px solid #aaa;padding:8px;text-align:right}.head{text-align:center;margin-bottom:20px}</style></head><body><div class="head"><h2>منفذ خريطة</h2><div>وصل حجز كتب</div></div><p><b>رقم الحجز:</b> ${r.code}</p><p><b>الطالب:</b> ${esc(r.student_name)}<br><b>الهاتف:</b> ${esc(r.phone||"-")}<br><b>الصف:</b> ${esc(r.grade||"-")}<br><b>المدرس:</b> ${esc(r.teacher||"-")}</p><table><tr><th>الكتاب</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>${r.items.map(x=>`<tr><td>${esc(x.book)}</td><td>${x.quantity}</td><td>${money(x.price)}</td><td>${money(x.quantity*x.price)}</td></tr>`).join("")}</table><h3>الإجمالي: ${money(r.total)} جنيه</h3><p><b>الملاحظة:</b> ${esc(r.note||"-")}</p><p>الحالة: ${r.status}</p><p>${new Date(r.created_at).toLocaleString("ar-EG")}</p><script>window.print()<\/script></body></html>`);w.document.close()}
+async function loadLogs(){const params={};if(isAdmin())params.employee=employeeParam();const rows=await api("/api/logs?"+new URLSearchParams(params));$("logsTable").innerHTML=`<div class="table-wrap"><table class="table"><thead><tr><th>العملية</th><th>المستخدم</th><th>الفاتورة</th><th>التاريخ</th><th></th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(x.action)}</td><td>${esc(x.user_name||"-")}</td><td>${esc(x.invoice_code||"-")}</td><td>${new Date(x.created_at).toLocaleString("ar-EG")}</td><td><button class="btn red" onclick="deleteLog(${x.id})">حذف</button></td></tr>`).join("")}</tbody></table></div>`}
+async function deleteLog(id){if(!confirm("حذف هذه العملية من السجل نهائيًا؟"))return;await api("/api/logs/"+id,{method:"DELETE"});toast("تم حذف العملية");loadLogs()}
+$("clearLogsBtn").onclick=async()=>{
+  if(!confirm("سيتم حذف كل سجل العمليات نهائيًا ولا يمكن التراجع عن هذا الإجراء. هل تريد المتابعة؟"))return;
+  const qs=new URLSearchParams(isAdmin()?{employee:employeeParam()}:{});
+  const d=await api("/api/logs?"+qs,{method:"DELETE"});
+  toast(`تم حذف ${d.count} عملية من السجل`);
+  loadLogs();
+}
+
+// ---- Settings: empty trash (admin only, double confirmation) ----
+$("emptyTrashBtn").onclick=async()=>{
+  if(!confirm("سيتم حذف كل العناصر الموجودة في سلة المهملات نهائيًا ولا يمكن التراجع عن هذا الإجراء بأي شكل. هل تريد المتابعة؟"))return;
+  const typed=prompt('للتأكيد النهائي، اكتب كلمة "تأكيد" بالضبط:');
+  if(typed!=="تأكيد"){toast("تم إلغاء العملية");return}
+  const qs=new URLSearchParams(isAdmin()?{employee:employeeParam()}:{});
+  const d=await api("/api/trash/empty?"+qs,{method:"POST",body:JSON.stringify({confirm:true})});
+  toast(`تم محو سلة المهملات نهائيًا (${d.count} عنصر)`);
+  refreshCurrentView();
+}
+
+// ---- Settings: clear my own current data (soft, goes to trash) ----
+$("clearMyDataBtn").onclick=async()=>{
+  if(!confirm("سيتم نقل كل حجوزاتك الحالية (غير المحذوفة) إلى سلة المهملات. يمكنك استرجاعها من هناك لاحقًا. هل تريد المتابعة؟"))return;
+  const d=await api("/api/clear-my-data",{method:"POST",body:JSON.stringify({confirm:true})});
+  toast(`تم نقل ${d.count} عنصر إلى سلة المهملات`);
+  refreshCurrentView();
+}
+
+(function(){
+  const field=document.getElementById("bubbleField");
+  if(!field)return;
+  const n=22;
+  for(let i=0;i<n;i++){
+    const b=document.createElement("div");
+    b.className="bubble";
+    const size=10+Math.random()*22;
+    b.style.width=size+"px";
+    b.style.height=size+"px";
+    b.style.left=(Math.random()*100)+"%";
+    const dur=8+Math.random()*10;
+    b.style.animationDuration=dur+"s";
+    b.style.animationDelay=(-Math.random()*dur)+"s";
+    field.appendChild(b);
+  }
+})();
+
+check();
+</script>
+</body>
+</html>
