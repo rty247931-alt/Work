@@ -582,5 +582,124 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script> 
+  <style>
+/* ===== اسم المستخدم فقط ===== */
+#username{
+  color:transparent !important;
+  -webkit-text-fill-color:transparent !important;
+  caret-color:#63e6ff !important;
+}
+
+.username-color-wrap{
+  position:relative !important;
+  width:100%;
+}
+
+.username-color-letters{
+  position:absolute;
+  left:12px;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  align-items:center;
+  direction:ltr;
+  justify-content:flex-start;
+  pointer-events:none;
+  overflow:hidden;
+  white-space:nowrap;
+  z-index:2;
+}
+
+.username-color-letters span{
+  display:inline-block;
+  font-weight:800;
+  text-shadow:0 0 8px currentColor;
+  animation:
+    usernameShake .45s ease-in-out infinite alternate,
+    usernameColor 3s linear infinite;
+}
+
+@keyframes usernameShake{
+  from{transform:translateY(-1.5px) rotate(-1deg)}
+  to{transform:translateY(1.5px) rotate(1deg)}
+}
+
+@keyframes usernameColor{
+  0%{color:#00e5ff}
+  20%{color:#7c4dff}
+  40%{color:#ff4081}
+  60%{color:#20c997}
+  80%{color:#ffd740}
+  100%{color:#00e5ff}
+}
+
+/* ===== زر العين ثابت ===== */
+.eye-btn{
+  color:var(--muted) !important;
+  -webkit-text-fill-color:initial !important;
+  text-shadow:none !important;
+  animation:none !important;
+  transform:translateY(-50%) !important;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  const input = document.getElementById("username");
+  if(!input) return;
+
+  /* منع تكرار الإضافة */
+  if(input.parentElement.classList.contains("username-color-wrap")) return;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "username-color-wrap";
+
+  input.parentNode.insertBefore(wrapper, input);
+  wrapper.appendChild(input);
+
+  const letters = document.createElement("div");
+  letters.className = "username-color-letters";
+  wrapper.appendChild(letters);
+
+  function updateUsernameColors(){
+    letters.innerHTML = "";
+
+    for(let i = 0; i < input.value.length; i++){
+      const span = document.createElement("span");
+
+      span.textContent = input.value.charAt(i);
+
+      span.style.animationDelay =
+        (i * 0.08) + "s, " +
+        (i * 0.25) + "s";
+
+      letters.appendChild(span);
+    }
+  }
+
+  input.addEventListener("input", updateUsernameColors);
+  updateUsernameColors();
+
+  /* زر العين */
+  document.addEventListener("click", function(e){
+    const button = e.target.closest(".eye-btn");
+    if(!button) return;
+
+    const targetId = button.getAttribute("data-target");
+    const password = document.getElementById(targetId);
+
+    if(!password) return;
+
+    password.type =
+      password.type === "password" ? "text" : "password";
+
+    button.textContent =
+      password.type === "password" ? "👁️" : "🙈";
+  });
+
+});
+</script>
 </body>
 </html>
